@@ -13,6 +13,9 @@ import java.awt.Rectangle;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
+
+import javax.imageio.ImageIO;
 
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -22,8 +25,11 @@ public class ImageFacer extends Frame {
 	
 	// Images to display
 	BufferedImage personaImage;
+	BufferedImage pizzaImage;
+	BufferedImage synthesisImage;
 	
 	public ImageFacer() {
+		/* ----- Face detection ----- */
 		FaceDetector faceDetector = new FaceDetector();
     	
     	// Face detection algorithms
@@ -34,6 +40,17 @@ public class ImageFacer extends Frame {
         
         personaImage = faceDetector.detect(faceDetectCascade, personaMat);
         
+        /* ----- Texture synthesis ----- */
+        try {
+        	pizzaImage = ImageIO.read(new File("res/img/pepperoni-pizza.png"));
+		} catch (Exception e) {
+			System.out.println("Cannot load the provided image");
+		}
+        
+        TextureSynthesis textureSynth = new TextureSynthesis(pizzaImage, personaImage.getWidth(), personaImage.getHeight());
+        synthesisImage = textureSynth.synthesize(16);
+        
+        /* ----- Window properties ----- */
         this.setTitle("Image Facer");
 		this.setVisible(true);
 		this.addWindowListener(
@@ -48,7 +65,7 @@ public class ImageFacer extends Frame {
 	public void paint(Graphics g) {
 		// Persona image size
 		int w1 = personaImage.getWidth() / 2;
-		int h1 = personaImage.getWidth() / 2;
+		int h1 = personaImage.getHeight() / 2;
 		
 		// Window size
 		Rectangle windowBounds = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
@@ -59,8 +76,11 @@ public class ImageFacer extends Frame {
 	    Font f1 = new Font("Verdana", Font.PLAIN, 13);  
 	    g.setFont(f1);
 		
-	    g.drawString("Detected image", 20, 40);
-		g.drawImage(personaImage, 20, 50, w1, h1, this);
+	    g.drawString("Detected image", 		20*1	 , 40);
+		g.drawImage(personaImage, 			20*1	 , 50, 		  w1, h1, this);
+		
+		g.drawString("Synthesized image", 	20*2 + w1, 40);
+		g.drawImage(synthesisImage, 		20*2 + w1, 50, w1, h1, this);
 	}
     
     public static void main(String[] args) {
