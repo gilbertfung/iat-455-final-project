@@ -8,16 +8,20 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.objdetect.CascadeClassifier;
  
@@ -27,17 +31,18 @@ public class ImageFacer extends Frame {
 	BufferedImage personaImage;
 	BufferedImage synthesisImage;
 	
-	BufferedImage personaInverted;
+	//BufferedImage personaInverted;
 	BufferedImage pizzaImage;
 	
 	BufferedImage supressedImage;
 	BufferedImage invertdMatteImage;
 	BufferedImage newBackgroundImage;
 	BufferedImage finalResultImage;
+	BufferedImage faceArea;
 	
 	public ImageFacer() {
 		try {
-			personaInverted = ImageIO.read(new File("res/img/persona-bw.jpg"));
+			//personaInverted = ImageIO.read(new File("res/img/persona-bw.jpg"));
 			pizzaImage = ImageIO.read(new File("res/img/pepperoni-pizza.png"));
 		} catch (Exception e) {
 			System.out.println("Cannot load the provided image");
@@ -50,17 +55,19 @@ public class ImageFacer extends Frame {
     	CascadeClassifier faceDetectCascade = new CascadeClassifier("res/data/haarcascade_frontalface_default.xml");
         
     	// Images for detection
-    	Mat personaMat = Imgcodecs.imread("res/img/persona.JPG");
+    	Mat personaMat = Imgcodecs.imread("res/img/persona-bw.JPG");
         
         personaImage = faceDetector.detect(faceDetectCascade, personaMat);
         
-
         /* ----- Texture synthesis ----- */
         TextureSynthesis textureSynth = new TextureSynthesis(pizzaImage, personaImage, personaImage.getWidth(), personaImage.getHeight());
         synthesisImage = textureSynth.synthesize();
+
         
         /* ----- Window properties ----- */
-        finalResultImage = combineImages(pizzaImage, personaInverted, Operations.multiply);
+		finalResultImage = combineImages(pizzaImage, personaImage, Operations.multiply);
+
+		faceArea = maskFaces(pizzaImage, faceDetector.rectStartingPoints, faceDetector.rectSizes);
  
         this.setTitle("Image Facer");
 		this.setVisible(true);
@@ -100,6 +107,22 @@ public class ImageFacer extends Frame {
 
 				result.setRGB(i, j, new Color(newR, newG, newB).getRGB());
 			}
+		return result;
+	}
+	
+	public BufferedImage maskFaces(BufferedImage source, List<Point> rectStartingPoints, List<Point> rectSizes) {
+		BufferedImage result = new BufferedImage(source.getWidth(),source.getHeight(), source.getType());
+		Graphics2D gr = source.createGraphics();
+		gr.setPaint(Color.black);
+		gr.fillRect(0, 0, source.getWidth(), source.getHeight());
+		gr.setPaint(Color.white);
+		for (int i = 0; i > rectStartingPoints.size(); i++) {
+			gr.fillRect((int) rectStartingPoints.get(i).x, 
+						(int) rectStartingPoints.get(i).y,
+						(int) rectSizes.get(i).x,
+						(int) rectSizes.get(i).y);
+		}
+		gr.dispose();
 		return result;
 	}
 	
@@ -144,8 +167,11 @@ public class ImageFacer extends Frame {
 		g.drawString("Synthesized image", 	20*2 + w1, 40);
 		g.drawImage(synthesisImage, 		20*2 + w1, 50, w1, h1, this);
 		
-		g.drawString("Final image", 		20*3 + w1, 40);
+		g.drawString("result image", 		20*3 + w1, 40);
 		g.drawImage(finalResultImage, 		20*3 + w1, 50, w1, h1, this);
+
+		g.drawString("Face area image", 	20*4 + w1, 40);
+		g.drawImage(faceArea, 				20*4 + w1, 50, w1, h1, this);
 	}
     
     public static void main(String[] args) {

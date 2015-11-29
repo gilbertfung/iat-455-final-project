@@ -3,6 +3,8 @@ package iat455.finalproject;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -14,6 +16,10 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
 
 public class FaceDetector {
+	public List<Point> rectStartingPoints = new ArrayList<Point>();
+    public List<Point> rectSizes = new ArrayList<Point>();
+    public List<Scalar> rectColors = new ArrayList<Scalar>();
+	
 	public FaceDetector() {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         System.out.println("\nRunning FaceDetector");
@@ -26,10 +32,16 @@ public class FaceDetector {
  
         System.out.println(String.format("Detected %s faces", faceDetections.toArray().length));
         
+        
+        int index = 0;
+        
         // Draw a rectangle on the detected element
         for (Rect rect : faceDetections.toArray()) {
-            Imgproc.rectangle(matImage, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height),
-                    new Scalar(0, 255, 0));
+        	rectStartingPoints.add(new Point(rect.x, rect.y));
+        	rectSizes.add(new Point(rect.x + rect.width, rect.y + rect.height));
+        	rectColors.add(new Scalar(0, 255, 0));
+        	Imgproc.rectangle(matImage, rectStartingPoints.get(index), rectSizes.get(index), rectColors.get(index));
+        	index++;
         }
         
 //        Writing to file
