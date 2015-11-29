@@ -13,6 +13,9 @@ import java.awt.Rectangle;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
+
+import javax.imageio.ImageIO;
 
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -22,8 +25,22 @@ public class ImageFacer extends Frame {
 	
 	// Images to display
 	BufferedImage personaImage;
+	BufferedImage personaInverted;
+	BufferedImage pizzaImage;
+	
+	BufferedImage supressedImage;
+	BufferedImage invertdMatteImage;
+	BufferedImage newBackgroundImage;
+	BufferedImage finalResultImage;
 	
 	public ImageFacer() {
+		try {
+			personaInverted = ImageIO.read(new File("res/img/persona-bw.jpg"));
+			pizzaImage = ImageIO.read(new File("res/img/pizza.png"));
+		} catch (Exception e) {
+			System.out.println("Cannot load the provided image");
+		}
+		
 		FaceDetector faceDetector = new FaceDetector();
     	
     	// Face detection algorithms
@@ -34,6 +51,8 @@ public class ImageFacer extends Frame {
         
         personaImage = faceDetector.detect(faceDetectCascade, personaMat);
         
+        finalResultImage = combineImages(pizzaImage, personaInverted, Operations.multiply);
+        
         this.setTitle("Image Facer");
 		this.setVisible(true);
 		this.addWindowListener(
@@ -43,6 +62,57 @@ public class ImageFacer extends Frame {
 				}
 			}
 		);
+	}
+	
+	public BufferedImage combineImages(BufferedImage src1, BufferedImage src2, Operations op) {
+		BufferedImage result = new BufferedImage(src1.getWidth(),src1.getHeight(), src1.getType());
+
+		// apply operation to each pixel
+		for (int i = 0; i < result.getWidth(); i++)
+			for (int j = 0; j < result.getHeight(); j++) {
+				int rgb1 = src1.getRGB(i, j);
+				int rgb2 = src2.getRGB(i, j);
+
+				int newR = 0, newG = 0, newB = 0;
+				if (op == Operations.add) {
+					newR = getRed(rgb1) + getRed(rgb2);
+					newG = getGreen(rgb1) + getGreen(rgb2);
+					newB = getBlue(rgb1) + getBlue(rgb2);
+
+				} else if (op == Operations.multiply) {
+					newR = (getRed(rgb1) * getRed(rgb2)) / 255;
+					newG = (getGreen(rgb1) * getGreen(rgb2)) / 255;
+					newB = (getBlue(rgb1) * getBlue(rgb2)) / 255; 
+				}
+
+				newR = clip(newR);
+				newG = clip(newG);
+				newB = clip(newB);
+
+				result.setRGB(i, j, new Color(newR, newG, newB).getRGB());
+			}
+		return result;
+	}
+	
+	private int clip(int v) {
+		v = v > 255 ? 255 : v;
+		v = v < 0 ? 0 : v;
+		return v;
+	}
+	
+	// return red pixels
+	protected int getRed(int pixel) {
+		return (new Color(pixel)).getRed();
+	}
+
+	// return green pixels
+	protected int getGreen(int pixel) {
+		return (new Color(pixel)).getGreen();
+	}
+
+	// return blue pixels
+	protected int getBlue(int pixel) {
+		return (new Color(pixel)).getBlue();
 	}
 	
 	public void paint(Graphics g) {
@@ -61,6 +131,9 @@ public class ImageFacer extends Frame {
 		
 	    g.drawString("Detected image", 20, 40);
 		g.drawImage(personaImage, 20, 50, w1, h1, this);
+		
+		g.drawString("Detected image", 270, 40);
+		g.drawImage(finalResultImage, 270, 50, w1, h1, this);
 	}
     
     public static void main(String[] args) {
