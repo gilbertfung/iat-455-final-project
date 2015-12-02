@@ -10,19 +10,19 @@ import org.opencv.core.MatOfRect;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
 
 public class FaceDetector {
 	public FaceDetector() {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-        System.out.println("\nLoaded FaceDetector");
+        System.out.println("\nRunning FaceDetector");
     }
 	
 	public BufferedImage detect(CascadeClassifier cascade, Mat matImage) {
 		MatOfRect faceDetections = new MatOfRect();
         cascade.detectMultiScale(matImage, faceDetections);
+//        cascade.detectMultiScale(image, objects, scaleFactor, minNeighbors, flags, minSize, maxSize);
  
         System.out.println(String.format("Detected %s faces", faceDetections.toArray().length));
         
