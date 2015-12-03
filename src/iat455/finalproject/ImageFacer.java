@@ -75,19 +75,19 @@ public class ImageFacer extends Frame {
         TextureSynthesis textureSynthPersona = new TextureSynthesis(pizzaImage, personaImage, personaImage.getWidth(), personaImage.getHeight());
         TextureSynthesis textureSynthPersona2 = new TextureSynthesis(speghettiImage, personaImage, personaImage.getWidth(), personaImage.getHeight());
         pizzaSynthImage = textureSynthPersona.synthesize(15);
-        spaghettiSynthImage = textureSynthPersona.synthesize(8);
+        spaghettiSynthImage = textureSynthPersona2.synthesize(8);
         
-        TextureSynthesis textureSynthFace = new TextureSynthesis(pizzaImage, personaImage, personaImage.getWidth(), personaImage.getHeight());
-        TextureSynthesis textureSynthFace2 = new TextureSynthesis(speghettiImage, personaImage, personaImage.getWidth(), personaImage.getHeight());
+        TextureSynthesis textureSynthFace = new TextureSynthesis(pizzaImage, faceImage, faceImage.getWidth(), faceImage.getHeight());
+        TextureSynthesis textureSynthFace2 = new TextureSynthesis(speghettiImage, faceImage, faceImage.getWidth(), faceImage.getHeight());
         pizzaSynthImage2 = textureSynthFace.synthesize(15);
         spaghettiSynthImage2 = textureSynthFace2.synthesize(8);
         
         /* ----- Window properties ----- */
         personaResult = combineImages(pizzaSynthImage, personaMask, Operations.multiply);
-        faceResult = combineImages(pizzaSynthImage, faceMask, Operations.multiply);
+        faceResult = combineImages(pizzaSynthImage2, faceMask, Operations.multiply);
         
         personaResultAlt = combineImages(spaghettiSynthImage, personaMask, Operations.multiply);
-        faceResultAlt = combineImages(spaghettiSynthImage, faceMask, Operations.multiply);
+        faceResultAlt = combineImages(spaghettiSynthImage2, faceMask, Operations.multiply);
         
 //        faceArea = maskFaces(pizzaImage, faceDetector.rectStartingPoints, faceDetector.rectSizes);
  
@@ -195,11 +195,11 @@ public class ImageFacer extends Frame {
 //		g.drawString("Face area image", 	20*4 + w1*3, 40);
 //		g.drawImage(faceArea, 				20*4 + w1*3, 50, w1, h1, this);
 
-		g.drawString("Pizza Result", 		20*5 + w1*3, 40);
-		g.drawImage(personaResult, 			20*5 + w1*3, 50, w1, h1, this);
+		g.drawString("Pizza Result", 		20*4 + w1*3, 40);
+		g.drawImage(personaResult, 			20*4 + w1*3, 50, w1, h1, this);
 		
-		g.drawString("Speghetti Result",	20*6 + w1*4, 40);
-		g.drawImage(personaResultAlt, 		20*6 + w1*4, 50, w1, h1, this);
+		g.drawString("Speghetti Result",	20*5 + w1*4, 40);
+		g.drawImage(personaResultAlt, 		20*5 + w1*4, 50, w1, h1, this);
 		
 		g.drawString("Detected image", 		20*1 + w1*0, 40*2 + h1);
 		g.drawImage(faceImage, 				20*1 + w1*0, 50*2 + h1, w1, h1, this);
