@@ -33,15 +33,20 @@ public class ImageFacer extends Frame {
 	BufferedImage faceImage;
 	BufferedImage faceMask;
 	BufferedImage pizzaImage;
+	BufferedImage speghettiImage;
 	
 	BufferedImage personaResult;
 	BufferedImage faceResult;
+	
+	BufferedImage personaResultAlt;
+	BufferedImage faceResultAlt;
 	
 	BufferedImage faceArea;
 	
 	public ImageFacer() {
 		try {
 			pizzaImage = ImageIO.read(new File("res/img/pizza.png"));
+			speghettiImage = ImageIO.read(new File("res/img/speghetti.jpg"));
 			personaMask = ImageIO.read(new File("res/img/persona-mask.jpg"));
 			faceMask = ImageIO.read(new File("res/img/face-mask.png"));
 		} catch (Exception e) {
@@ -62,6 +67,9 @@ public class ImageFacer extends Frame {
         
         personaResult = combineImages(pizzaImage, personaMask, Operations.multiply);
         faceResult = combineImages(pizzaImage, faceMask, Operations.multiply);
+        
+        personaResultAlt = combineImages(speghettiImage, personaMask, Operations.multiply);
+        faceResultAlt = combineImages(speghettiImage, faceMask, Operations.multiply);
         
         faceArea = maskFaces(pizzaImage, faceDetector.rectStartingPoints, faceDetector.rectSizes);
         
@@ -163,8 +171,11 @@ public class ImageFacer extends Frame {
 		g.drawString("Photoshop mask", 270, 40);
 		g.drawImage(personaMask, 270, 50, w1, h1, this);
 		
-		g.drawString("Result", 520, 40);
+		g.drawString("Pizza Result", 520, 40);
 		g.drawImage(personaResult, 520, 50, w1, h1, this);
+		
+		g.drawString("Speghetti Result", 770, 40);
+		g.drawImage(personaResultAlt, 770, 50, w1, h1, this);
 		
 		g.drawString("Detected image", 20, 270);
 		g.drawImage(faceImage, 20, 280, w1, h1, this);
@@ -172,8 +183,11 @@ public class ImageFacer extends Frame {
 		g.drawString("Photoshop mask", 270, 270);
 		g.drawImage(faceMask, 270, 280, w1, h1, this);
 		
-		g.drawString("Result", 520, 270);
+		g.drawString("Pizza Result", 520, 270);
 		g.drawImage(faceResult, 520, 280, w1, h1, this);
+		
+		g.drawString("Speghetti Result", 770, 270);
+		g.drawImage(faceResultAlt, 770, 280, w1, h1, this);
 	}
     
     public static void main(String[] args) {
