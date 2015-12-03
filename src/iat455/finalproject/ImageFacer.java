@@ -47,8 +47,8 @@ public class ImageFacer extends Frame {
 			System.out.println("Cannot load the provided image");
 		}
         
-        TextureSynthesis textureSynth = new TextureSynthesis(pizzaImage, personaImage.getWidth(), personaImage.getHeight());
-        synthesisImage = textureSynth.synthesize(16);
+        TextureSynthesis textureSynth = new TextureSynthesis(pizzaImage, personaImage, personaImage.getWidth(), personaImage.getHeight());
+        synthesisImage = textureSynth.synthesize();
         
         /* ----- Window properties ----- */
         this.setTitle("Image Facer");
