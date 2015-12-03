@@ -23,8 +23,10 @@ public class TextureSynthesis {
 	private int targetWidth;
 	private int targetHeight;
 	
-	private BufferedImage[] blocks;
+	private BufferedImage[] sourceBlocks;
+	private BufferedImage[] targetBlocks;
 	private int[] blockIntensities;
+	private int[] targetBlockIntensities;
 
 	public TextureSynthesis(BufferedImage sourceTexture, BufferedImage targetImage, int targetWidth, int targetHeight) {
 		this.sourceTexture = sourceTexture;
@@ -34,24 +36,21 @@ public class TextureSynthesis {
 	}
 	
 	public BufferedImage synthesize() {
-		blocks = this.divideToBlocks(sourceTexture, targetWidth/20, targetHeight/20);
+		sourceBlocks = this.divideToBlocks(sourceTexture, 15, 15, false);
+		targetBlocks = this.divideToBlocks(targetImage, 15, 15, true);
 		
 		targetTexture = new BufferedImage(this.targetWidth, this.targetHeight, this.sourceTexture.getType());
 		
-		int blockWidth = blocks[0].getWidth();
-		int blockHeight = blocks[0].getHeight();
-		int numRows = (int) Math.ceil(this.targetWidth / blockWidth) + 1;
+		int blockWidth  = sourceBlocks[0].getWidth();
+		int blockHeight = sourceBlocks[0].getHeight();
+		int numRows = (int) Math.ceil(this.targetWidth  / blockWidth ) + 1;
 		int numCols = (int) Math.ceil(this.targetHeight / blockHeight) + 1;
 		
 		Graphics2D gr = targetTexture.createGraphics();
 		BufferedImage croppedBlock;
 		for (int x = 0; x < blockWidth * numRows; x += blockWidth) {
 			for (int y = 0; y < blockHeight * numCols; y += blockHeight) {
-//				croppedBlock = getRandomBlock(blocks);
-				croppedBlock = getIntensityBlock(blocks, targetImage, x, y); // get current location -> get value of target image 
-				
-//				croppedBlock = cropImage(targetImage, new Rectangle(x, y, blockWidth, blockHeight));
-//				targetBlock = new ImageBlock(croppedBlock);
+				croppedBlock = getIntensityBlock(sourceBlocks, targetImage, x, y); // get current location -> get value of target image 
 				gr.drawImage(croppedBlock, x, y, null);
 			}
 		}
@@ -62,15 +61,15 @@ public class TextureSynthesis {
 		return targetTexture;
 	}
 	
-	// http://kalanir.blogspot.ca/2010/02/how-to-split-image-into-chunks-java.html
-	private BufferedImage[] divideToBlocks(BufferedImage image, int rows, int cols) {
+		// http://kalanir.blogspot.ca/2010/02/how-to-split-image-into-chunks-java.html
+	private BufferedImage[] divideToBlocks(BufferedImage image, int rows, int cols, boolean isTarget) {
 		int blockSize = rows * cols;
 		int blockWidth = image.getWidth() / cols;
 		int blockHeight = image.getHeight() / rows;
 		
 		int count = 0;
 		BufferedImage blocks[] = new BufferedImage[blockSize];
-		blockIntensities = new int[blockSize];
+		int[] blockIntensities = new int[blockSize];
 		
 		// iterate through all image blocks (not every pixel)
 		for (int x = 0; x < rows; x++) {
@@ -87,12 +86,21 @@ public class TextureSynthesis {
                 gr.dispose();
                 
                 blockIntensities[count] = calculateIntensity(blocks[count]);
-                System.out.println(blockIntensities[count]);
                 count++;
             }
 		}
 		
+		for (int i = 0; i < blockIntensities.length; i++) {
+			blockIntensities[i] = mapRange(blockIntensities[i], getMin(blockIntensities), getMax(blockIntensities), 0, 255);
+		}
+		
 		System.out.println("Splitting done");
+		
+		if (isTarget) {
+			this.targetBlockIntensities = blockIntensities;
+		} else {
+			this.blockIntensities = blockIntensities;
+		}
 		return blocks;
 	}
 
@@ -107,13 +115,15 @@ public class TextureSynthesis {
 		int rheight = (y + blocks[0].getHeight() >= targetImage.getHeight()) ? targetImage.getHeight() - y : blocks[0].getHeight();
 		if (rwidth > 0 && rheight > 0) { 
 			BufferedImage targetBlock = cropImage(targetImage, new Rectangle(x, y, rwidth, rheight));
-			int targetIntensity = calculateIntensity(targetBlock);
-//			System.out.println(targetIntensity);
+			
+			// max out range in case there aren't any 0 or 255 values
+			for (int i = 0; i < blockIntensities.length; i++) {
+				blockIntensities[i] = mapRange(blockIntensities[i], getMin(blockIntensities), getMax(blockIntensities), 0, 255);
+			}
+			int targetIntensity = mapRange(calculateIntensity(targetBlock), getMin(targetBlockIntensities), getMax(targetBlockIntensities), 0, 255);
 			
 			// find the one that is closest to the intensity of the target image
-	//		int blockIndex = Arrays.binarySearch(blockIntensities, targetIntensity);
 			int blockIndex = nearestMatch(blockIntensities, targetIntensity);
-//			System.out.println(blockIntensities[blockIndex]);
 		    return blocks[blockIndex];
 		} else {
 			return null;
@@ -145,6 +155,22 @@ public class TextureSynthesis {
 		BufferedImage result = source.getSubimage(rect.x, rect.y, rect.width, rect.height);
 		return result;
 	}
+	
+	public int mapRange(int value, int low1, int high1, int low2, int high2) {
+	    return low2 + (high2 - low2) * (value - low1) / (high1 - low1);
+	}
+	
+	public int getMin(int[] listOfNumbers) {
+		//MIN NUMBER
+		Arrays.sort(listOfNumbers);
+		return listOfNumbers[0];
+	}
+	
+	public int getMax(int[] listOfNumbers) {
+		//MAX NUMBER
+		Arrays.sort(listOfNumbers);
+		return listOfNumbers[listOfNumbers.length - 1];
+	}	
 	
 	// http://stackoverflow.com/questions/13605248/java-converting-image-to-bufferedimage/13605411#13605411
 	public static BufferedImage toBufferedImage(Image img) {
