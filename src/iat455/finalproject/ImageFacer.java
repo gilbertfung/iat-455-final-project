@@ -35,15 +35,20 @@ public class ImageFacer extends Frame {
 	BufferedImage faceImage;
 	BufferedImage faceMask;
 	BufferedImage pizzaImage;
+	BufferedImage speghettiImage;
 	
 	BufferedImage personaResult;
 	BufferedImage faceResult;
+	
+	BufferedImage personaResultAlt;
+	BufferedImage faceResultAlt;
 	
 	BufferedImage faceArea;
 	
 	public ImageFacer() {
 		try {
 			pizzaImage = ImageIO.read(new File("res/img/pepperoni-pizza.png"));
+			speghettiImage = ImageIO.read(new File("res/img/speghetti.jpg"));
 			personaMask = ImageIO.read(new File("res/img/persona-mask.jpg"));
 			faceMask = ImageIO.read(new File("res/img/face-mask.png"));
 		} catch (Exception e) {
@@ -70,6 +75,9 @@ public class ImageFacer extends Frame {
         /* ----- Window properties ----- */
         personaResult = combineImages(pizzaImage, personaMask, Operations.multiply);
         faceResult = combineImages(pizzaImage, faceMask, Operations.multiply);
+        
+        personaResultAlt = combineImages(speghettiImage, personaMask, Operations.multiply);
+        faceResultAlt = combineImages(speghettiImage, faceMask, Operations.multiply);
         
         faceArea = maskFaces(pizzaImage, faceDetector.rectStartingPoints, faceDetector.rectSizes);
  
@@ -170,29 +178,30 @@ public class ImageFacer extends Frame {
 		
 		g.drawString("Synthesized image", 	20*2 + w1, 40);
 		g.drawImage(synthesisImage, 		20*2 + w1, 50, w1, h1, this);
-		
-//<<<<<<< HEAD
-		g.drawString("result image", 		20*3 + w1, 40);
-		g.drawImage(finalResultImage, 		20*3 + w1, 50, w1, h1, this);
+
+		g.drawString("Photoshop mask", 		20*3 + w1, 40);
+		g.drawImage(personaMask, 			20*3 + w1, 50, w1, h1, this);
 
 		g.drawString("Face area image", 	20*4 + w1, 40);
 		g.drawImage(faceArea, 				20*4 + w1, 50, w1, h1, this);
-//=======
-		g.drawString("Photoshop mask", 270, 40);
-		g.drawImage(personaMask, 270, 50, w1, h1, this);
+
+		g.drawString("Pizza Result", 		20*5 + w1, 40);
+		g.drawImage(personaResult, 			20*5 + w1, 50, w1, h1, this);
 		
-		g.drawString("Result", 520, 40);
-		g.drawImage(personaResult, 520, 50, w1, h1, this);
+		g.drawString("Speghetti Result",	20*6 + w1, 40);
+		g.drawImage(personaResultAlt, 		20*6 + w1, 50, w1, h1, this);
 		
-		g.drawString("Detected image", 20, 270);
-		g.drawImage(faceImage, 20, 280, w1, h1, this);
+		g.drawString("Detected image", 		20*1	 , 40*2 + h1);
+		g.drawImage(faceImage, 				20*1	 , 50*2 + h1, w1, h1, this);
 		
-		g.drawString("Photoshop mask", 270, 270);
-		g.drawImage(faceMask, 270, 280, w1, h1, this);
+		g.drawString("Photoshop mask", 		20*2	 , 40*2 + h1);
+		g.drawImage(faceMask, 				20*2	 , 50*2 + h1, w1, h1, this);
 		
-		g.drawString("Result", 520, 270);
-		g.drawImage(faceResult, 520, 280, w1, h1, this);
-//>>>>>>> Masked pizza initial results
+		g.drawString("Pizza Result", 		20*3	 , 40*2 + h1);
+		g.drawImage(faceResult, 			20*3	 , 50*2 + h1, w1, h1, this);
+		
+		g.drawString("Speghetti Result", 	20*4	 , 40*2 + h1);
+		g.drawImage(faceResultAlt,			20*4	 , 50*2 + h1, w1, h1, this);
 	}
     
     public static void main(String[] args) {
