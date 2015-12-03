@@ -29,19 +29,21 @@ public class ImageFacer extends Frame {
 	
 	// Images to display
 	BufferedImage personaImage;
-	//BufferedImage personaInverted;
+	BufferedImage personaMask;
+	BufferedImage faceImage;
+	BufferedImage faceMask;
 	BufferedImage pizzaImage;
 	
-	BufferedImage supressedImage;
-	BufferedImage invertdMatteImage;
-	BufferedImage newBackgroundImage;
-	BufferedImage finalResultImage;
+	BufferedImage personaResult;
+	BufferedImage faceResult;
+	
 	BufferedImage faceArea;
 	
 	public ImageFacer() {
 		try {
-			//personaInverted = ImageIO.read(new File("res/img/persona-bw.jpg"));
 			pizzaImage = ImageIO.read(new File("res/img/pizza.png"));
+			personaMask = ImageIO.read(new File("res/img/persona-mask.jpg"));
+			faceMask = ImageIO.read(new File("res/img/face-mask.png"));
 		} catch (Exception e) {
 			System.out.println("Cannot load the provided image");
 		}
@@ -52,11 +54,14 @@ public class ImageFacer extends Frame {
     	CascadeClassifier faceDetectCascade = new CascadeClassifier("res/data/haarcascade_frontalface_default.xml");
         
     	// Images for detection
-    	Mat personaMat = Imgcodecs.imread("res/img/persona-bw.JPG");
+    	Mat personaMat = Imgcodecs.imread("res/img/persona.JPG");
+    	Mat faceMat = Imgcodecs.imread("res/img/face.jpg");
         
         personaImage = faceDetector.detect(faceDetectCascade, personaMat);
+        faceImage = faceDetector.detect(faceDetectCascade, faceMat);
         
-        finalResultImage = combineImages(pizzaImage, personaImage, Operations.multiply);
+        personaResult = combineImages(pizzaImage, personaMask, Operations.multiply);
+        faceResult = combineImages(pizzaImage, faceMask, Operations.multiply);
         
         faceArea = maskFaces(pizzaImage, faceDetector.rectStartingPoints, faceDetector.rectSizes);
         
@@ -155,8 +160,20 @@ public class ImageFacer extends Frame {
 	    g.drawString("Detected image", 20, 40);
 		g.drawImage(personaImage, 20, 50, w1, h1, this);
 		
-		g.drawString("Detected image", 270, 40);
-		g.drawImage(faceArea, 270, 50, w1, h1, this);
+		g.drawString("Photoshop mask", 270, 40);
+		g.drawImage(personaMask, 270, 50, w1, h1, this);
+		
+		g.drawString("Result", 520, 40);
+		g.drawImage(personaResult, 520, 50, w1, h1, this);
+		
+		g.drawString("Detected image", 20, 270);
+		g.drawImage(faceImage, 20, 280, w1, h1, this);
+		
+		g.drawString("Photoshop mask", 270, 270);
+		g.drawImage(faceMask, 270, 280, w1, h1, this);
+		
+		g.drawString("Result", 520, 270);
+		g.drawImage(faceResult, 520, 280, w1, h1, this);
 	}
     
     public static void main(String[] args) {
