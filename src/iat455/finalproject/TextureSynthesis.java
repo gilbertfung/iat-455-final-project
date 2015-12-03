@@ -23,6 +23,7 @@ public class TextureSynthesis {
 	private int targetWidth;
 	private int targetHeight;
 	
+	private Block sourceBlock;
 	private BufferedImage[] sourceBlocks;
 	private BufferedImage[] targetBlocks;
 	private int[] blockIntensities;
@@ -36,22 +37,40 @@ public class TextureSynthesis {
 	}
 	
 	public BufferedImage synthesize() {
-		sourceBlocks = this.divideToBlocks(sourceTexture, 15, 15, false);
-		targetBlocks = this.divideToBlocks(targetImage, 15, 15, true);
+		sourceBlock = new Block(this.sourceTexture, targetImage);
+//		sourceBlocks = this.divideToBlocks(sourceTexture, 10, 10, false);
+//		targetBlocks = this.divideToBlocks(targetImage, 10, 10, true);
 		
 		targetTexture = new BufferedImage(this.targetWidth, this.targetHeight, this.sourceTexture.getType());
 		
-		int blockWidth  = sourceBlocks[0].getWidth();
-		int blockHeight = sourceBlocks[0].getHeight();
+		int blockWidth  = sourceBlock.imageBlocks.get(0).getWidth();
+		int blockHeight = sourceBlock.imageBlocks.get(0).getHeight();
 		int numRows = (int) Math.ceil(this.targetWidth  / blockWidth ) + 1;
 		int numCols = (int) Math.ceil(this.targetHeight / blockHeight) + 1;
 		
 		Graphics2D gr = targetTexture.createGraphics();
-		BufferedImage croppedBlock;
-		for (int x = 0; x < blockWidth * numRows; x += blockWidth) {
-			for (int y = 0; y < blockHeight * numCols; y += blockHeight) {
-				croppedBlock = getIntensityBlock(sourceBlocks, targetImage, x, y); // get current location -> get value of target image 
-				gr.drawImage(croppedBlock, x, y, null);
+//		BlockImage seedBlockImage;
+		BlockImage blockImage;
+		for (int y = 0; y < blockWidth * numCols - blockWidth; y += blockWidth) {
+			for (int x = 0; x < blockHeight * numRows - blockHeight; x += blockHeight) {
+				int blockIndex = (y/blockHeight * numCols) + x/blockWidth;
+				if (blockIndex == 0) { // first block
+					blockImage = sourceBlock.getRandomImageBlock();
+				} else if (x > 0) { // following cols
+//					
+//					// sample last row of pixels from previous block
+//					// find closest match for these pixels with sampled block
+//				} else if (y > 0) { // following rows
+//					// 
+				} else if (blockIndex == numCols * numRows) { // last block
+					blockImage = sourceBlock.getRandomImageBlock();
+//					blockImage = sourceBlock.findMatchingBlock(sourceBlock.imageBlocks.get(blockIndex), Block.LEFT_EDGE);
+				} else {
+					System.out.println(x + "," + y);
+					blockImage = sourceBlock.getRandomImageBlock();
+//					blockImage = sourceBlock.findMatchingBlock(sourceBlock.imageBlocks.get(blockIndex), Block.LEFT_EDGE);
+				}
+				gr.drawImage(blockImage, x, y, null);
 			}
 		}
 		gr.dispose();
@@ -61,8 +80,8 @@ public class TextureSynthesis {
 		return targetTexture;
 	}
 	
-		// http://kalanir.blogspot.ca/2010/02/how-to-split-image-into-chunks-java.html
-	private BufferedImage[] divideToBlocks(BufferedImage image, int rows, int cols, boolean isTarget) {
+	// http://kalanir.blogspot.ca/2010/02/how-to-split-image-into-chunks-java.html
+/*	private BufferedImage[] divideToBlocks(BufferedImage image, int rows, int cols, boolean isTarget) {
 		int blockSize = rows * cols;
 		int blockWidth = image.getWidth() / cols;
 		int blockHeight = image.getHeight() / rows;
@@ -102,55 +121,8 @@ public class TextureSynthesis {
 			this.blockIntensities = blockIntensities;
 		}
 		return blocks;
-	}
+	}*/
 
-	public BufferedImage getRandomBlock(BufferedImage[] blocks) {
-	    int rnd = new Random().nextInt(blocks.length);
-	    return blocks[rnd];
-	}
-	
-	public BufferedImage getIntensityBlock(BufferedImage[] blocks, BufferedImage targetImage, int x, int y) {
-		// get location
-		int rwidth  = (x + blocks[0].getWidth()  >= targetImage.getWidth() ) ? targetImage.getWidth()  - x : blocks[0].getWidth();
-		int rheight = (y + blocks[0].getHeight() >= targetImage.getHeight()) ? targetImage.getHeight() - y : blocks[0].getHeight();
-		if (rwidth > 0 && rheight > 0) { 
-			BufferedImage targetBlock = cropImage(targetImage, new Rectangle(x, y, rwidth, rheight));
-			
-			// max out range in case there aren't any 0 or 255 values
-			for (int i = 0; i < blockIntensities.length; i++) {
-				blockIntensities[i] = mapRange(blockIntensities[i], getMin(blockIntensities), getMax(blockIntensities), 0, 255);
-			}
-			int targetIntensity = mapRange(calculateIntensity(targetBlock), getMin(targetBlockIntensities), getMax(targetBlockIntensities), 0, 255);
-			
-			// find the one that is closest to the intensity of the target image
-			int blockIndex = nearestMatch(blockIntensities, targetIntensity);
-		    return blocks[blockIndex];
-		} else {
-			return null;
-		}
-	}
-	
-	private int calculateIntensity(BufferedImage image) {
-		BufferedImage scaledImage = toBufferedImage(image.getScaledInstance(1, 1, BufferedImage.SCALE_FAST));
-		Color color = new Color(scaledImage.getRGB(0, 0));
-		float hsb[] = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
-		return Math.round(hsb[2] * 255);
-	}
-	
-	public int nearestMatch(int[] array, int value) {
-	    if (array.length == 0) {
-	        throw new IllegalArgumentException();
-	    }
-	    int nearestMatchIndex = 0;
-	    for (int i = 1; i < array.length; i++) {
-	        if ( Math.abs(value - array[nearestMatchIndex])
-	                > Math.abs(value - array[i]) ) {
-	            nearestMatchIndex = i;
-	        }
-	    }
-	    return nearestMatchIndex;
-	}
-	
 	public static BufferedImage cropImage(BufferedImage source, Rectangle rect) {
 		BufferedImage result = source.getSubimage(rect.x, rect.y, rect.width, rect.height);
 		return result;
@@ -171,20 +143,4 @@ public class TextureSynthesis {
 		Arrays.sort(listOfNumbers);
 		return listOfNumbers[listOfNumbers.length - 1];
 	}	
-	
-	// http://stackoverflow.com/questions/13605248/java-converting-image-to-bufferedimage/13605411#13605411
-	public static BufferedImage toBufferedImage(Image img) {
-	    if (img instanceof BufferedImage) { return (BufferedImage) img; }
-
-	    // Create a buffered image with transparency
-	    BufferedImage bimage = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
-
-	    // Draw the image on to the buffered image
-	    Graphics2D bGr = bimage.createGraphics();
-	    bGr.drawImage(img, 0, 0, null);
-	    bGr.dispose();
-
-	    // Return the buffered image
-	    return bimage;
-	}
 }
