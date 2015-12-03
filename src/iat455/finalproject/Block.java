@@ -25,8 +25,8 @@ public class Block {
 	public static final int BOTTOM_EDGE = 3;
 	public static final int LEFT_EDGE = 4;
 	
-	public Block(BufferedImage sourceImage, BufferedImage targetImage) {
-		imageBlocks = divideToBlocks(sourceImage, 15, 15, false); // use 5, 5 for synthesis, 15, 15 for intensity only
+	public Block(BufferedImage sourceImage, BufferedImage targetImage, int divisions) {
+		imageBlocks = divideToBlocks(sourceImage, divisions, divisions, false); // use 5, 5 for synthesis, 15, 15 for intensity only
 		
 		// get all edge pixel intensities
 		for (int i = 0; i < imageBlocks.size(); i++) {

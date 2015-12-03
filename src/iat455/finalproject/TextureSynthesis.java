@@ -32,8 +32,8 @@ public class TextureSynthesis {
 		this.targetHeight = targetHeight;
 	}
 	
-	public BufferedImage synthesize() {
-		sourceBlock = new Block(sourceTexture, targetImage);
+	public BufferedImage synthesize(int divisions) {
+		sourceBlock = new Block(sourceTexture, targetImage, divisions);
 		
 		targetTexture = new BufferedImage(this.targetWidth, this.targetHeight, this.sourceTexture.getType());
 		
@@ -64,49 +64,6 @@ public class TextureSynthesis {
 		return targetTexture;
 	}
 	
-	// http://kalanir.blogspot.ca/2010/02/how-to-split-image-into-chunks-java.html
-/*	private BufferedImage[] divideToBlocks(BufferedImage image, int rows, int cols, boolean isTarget) {
-		int blockSize = rows * cols;
-		int blockWidth = image.getWidth() / cols;
-		int blockHeight = image.getHeight() / rows;
-		
-		int count = 0;
-		BufferedImage blocks[] = new BufferedImage[blockSize];
-		int[] blockIntensities = new int[blockSize];
-		
-		// iterate through all image blocks (not every pixel)
-		for (int x = 0; x < rows; x++) {
-            for (int y = 0; y < cols; y++) {
-                //Initialize the image array with image chunks  
-                blocks[count] = new BufferedImage(blockWidth, blockHeight, image.getType());
-                
-                // draws the image chunk  
-                Graphics2D gr = blocks[count].createGraphics();  
-                gr.drawImage(image, 0, 0, blockWidth, blockHeight, 
-                						  blockWidth * y, blockHeight * x, 
-                						  blockWidth * y + blockWidth, blockHeight * x + blockHeight, 
-                						  null);
-                gr.dispose();
-                
-                blockIntensities[count] = calculateIntensity(blocks[count]);
-                count++;
-            }
-		}
-		
-		for (int i = 0; i < blockIntensities.length; i++) {
-			blockIntensities[i] = mapRange(blockIntensities[i], getMin(blockIntensities), getMax(blockIntensities), 0, 255);
-		}
-		
-		System.out.println("Splitting done");
-		
-		if (isTarget) {
-			this.targetBlockIntensities = blockIntensities;
-		} else {
-			this.blockIntensities = blockIntensities;
-		}
-		return blocks;
-	}*/
-
 	public static BufferedImage cropImage(BufferedImage source, Rectangle rect) {
 		BufferedImage result = source.getSubimage(rect.x, rect.y, rect.width, rect.height);
 		return result;
