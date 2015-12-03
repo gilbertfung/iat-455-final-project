@@ -42,6 +42,7 @@ public class ImageFacer extends Frame {
         
         /* ----- Texture synthesis ----- */
         try {
+//        	personaImage = ImageIO.read(new File("res/img/persona.jpg"));
         	pizzaImage = ImageIO.read(new File("res/img/pepperoni-pizza.png"));
 		} catch (Exception e) {
 			System.out.println("Cannot load the provided image");

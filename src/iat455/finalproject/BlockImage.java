@@ -4,17 +4,13 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
-import java.awt.image.IndexColorModel;
-import java.awt.image.WritableRaster;
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
 
 public class BlockImage extends BufferedImage {
 	
 	public int intensity;
-	public BufferedImage image;
+//	public BufferedImage image;
 	public List<Integer> sampleT = new ArrayList<>();
 	public List<Integer> sampleL = new ArrayList<>();
 	public List<Integer> sampleB = new ArrayList<>();
@@ -22,22 +18,11 @@ public class BlockImage extends BufferedImage {
 
 	public BlockImage(BufferedImage image) {
 		super(image.getWidth(), image.getHeight(), image.getType());
-		this.init();
+//		this.image = image;
 	}
 	
 	public BlockImage(int width, int height, int imageType) {
 		super(width, height, imageType);
-		this.init();
-	}
-
-	public BlockImage(int width, int height, int imageType, IndexColorModel cm) {
-		super(width, height, imageType, cm);
-		this.init();
-	}
-
-	public BlockImage(ColorModel cm, WritableRaster raster, boolean isRasterPremultiplied, Hashtable<?, ?> properties) {
-		super(cm, raster, isRasterPremultiplied, properties);
-		this.init();
 	}
 	
 	public void init() {
@@ -45,8 +30,8 @@ public class BlockImage extends BufferedImage {
 		intensity = getIntensity(this);
 		
 		// collect the edges for sampling
-		for (int x = 0; x < this.getWidth(); 	  x += 8) {
-			for (int y = 0; y < this.getHeight(); y += 8) {
+		for (int x = 0; x < this.getWidth(); 	  x += this.getWidth() - 10) {
+			for (int y = 0; y < this.getHeight(); y += this.getHeight() - 10) {
 				int rgb = this.getRGB(x, y);
 				if (x == 0) {
 					sampleL.add(getRGBIntensity(rgb));
@@ -61,6 +46,7 @@ public class BlockImage extends BufferedImage {
 				}
 			}
 		}
+		System.out.println(sampleL);
 	}
 	
 	public int getRGBIntensity(int rgb) {
@@ -69,7 +55,7 @@ public class BlockImage extends BufferedImage {
 		return Math.round(hsb[2] * 255);
 	}
 	
-	public int getIntensity(BufferedImage image) {
+	public static int getIntensity(BufferedImage image) {
 		BufferedImage scaledImage = toBufferedImage(image.getScaledInstance(1, 1, BufferedImage.SCALE_FAST));
 		Color color = new Color(scaledImage.getRGB(0, 0));
 		float hsb[] = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);

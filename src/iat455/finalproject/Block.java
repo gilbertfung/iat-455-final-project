@@ -1,11 +1,13 @@
 package iat455.finalproject;
 
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Block {
 
@@ -17,16 +19,17 @@ public class Block {
 	private List<List<Integer>> bottomEdges = new ArrayList<>();
 	private List<List<Integer>> leftEdges = new ArrayList<>();
 	
-	public static final int TOP_EDGE = 0;
-	public static final int RIGHT_EDGE = 1;
-	public static final int BOTTOM_EDGE = 2;
-	public static final int LEFT_EDGE = 3;
+	public static final int NONE = 0;
+	public static final int TOP_EDGE = 1;
+	public static final int RIGHT_EDGE = 2;
+	public static final int BOTTOM_EDGE = 3;
+	public static final int LEFT_EDGE = 4;
 	
 	public Block(BufferedImage sourceImage, BufferedImage targetImage) {
-		imageBlocks = divideToBlocks(sourceImage, 10, 10, false);
+		imageBlocks = divideToBlocks(sourceImage, 15, 15, false); // use 5, 5 for synthesis, 15, 15 for intensity only
 		
 		// get all edge pixel intensities
-		for (int i = 0; i > imageBlocks.size(); i++) {
+		for (int i = 0; i < imageBlocks.size(); i++) {
 			topEdges.add(imageBlocks.get(i).sampleT);
 			rightEdges.add(imageBlocks.get(i).sampleR);
 			bottomEdges.add(imageBlocks.get(i).sampleB);
@@ -54,6 +57,7 @@ public class Block {
                 						  blockWidth * y + blockWidth, blockHeight * x + blockHeight, 
                 						  null);
                 gr.dispose();
+                blockImage.init();
                 blocks.add(blockImage);
             }
 		}
@@ -101,40 +105,46 @@ public class Block {
 				currentEdgeIntensities = currentBlockImage.sampleL;
 				allEdgeIntensities = this.rightEdges;
 				break;
-			default: // should never be the case
+			default:
 				currentEdgeIntensities = currentBlockImage.sampleL;
 				allEdgeIntensities = this.rightEdges;
 				break;
 		}
-		
+
 		// one edge of a block (array of pixel intensities)
 		int edgeIndex = 0;
-		for (int i = 0; i > allEdgeIntensities.size(); i++) {
+		for (int i = 0; i < allEdgeIntensities.size(); i++) {
 			if (findMatchingEdge(currentEdgeIntensities, allEdgeIntensities.get(i))) {
 				// matching edges found
 				edgeIndex = i;
+
 				break;
 			}; 
 		}
-		
+		System.out.println("edgeindex" + edgeIndex);
 		// provide the matching image block
 		return imageBlocks.get(edgeIndex);
 	}
 	
 	public boolean findMatchingEdge(List<Integer> currentEdgeIntensities, List<Integer> edgeIntensities) {
-		
+
 		boolean[] match = new boolean[currentEdgeIntensities.size()];
 		
 		// pixels of N for an edge 
-		for (int i = 0; i > edgeIntensities.size(); i++) {
-			match[i] = almostEqual(currentEdgeIntensities.get(i), edgeIntensities.get(i), 3);
+		for (int i = 0; i < edgeIntensities.size(); i++) {
+			
+			if (almostEqual(currentEdgeIntensities.get(i), edgeIntensities.get(i), 15)) {
+				match[i] = true;
+			}
 		}
 		
-		if (Arrays.asList(match).contains(false)) {
-			return false;
-		} else {
-			return true;
+		for (boolean value : match) {
+			if (value) {
+				System.out.println("I found a matching edge for your block");
+				return true; 
+			}
 		}
+		return false;
 	}
 	
 	public static boolean almostEqual(double a, double b, double eps){
@@ -151,4 +161,33 @@ public class Block {
 	    }
 	    return nearestMatchIndex;
 	}
+	
+    public BlockImage getIntensityBlock(BufferedImage targetImage, int x, int y) {
+        // get location
+        int rwidth  = (x + imageBlocks.get(0).getWidth()  >= targetImage.getWidth() ) ? targetImage.getWidth()  - x : imageBlocks.get(0).getWidth();
+        int rheight = (y + imageBlocks.get(0).getHeight() >= targetImage.getHeight()) ? targetImage.getHeight() - y : imageBlocks.get(0).getHeight();
+        if (rwidth > 0 && rheight > 0) { 
+            BufferedImage targetBlock = cropImage(targetImage, new Rectangle(x, y, rwidth, rheight));
+            int targetIntensity = BlockImage.getIntensity(targetBlock);
+            
+            ArrayList<Integer> imageBlockIntensities = new ArrayList<>();
+            for (int i = 0; i < imageBlocks.size(); i++) {
+            	imageBlockIntensities.add(imageBlocks.get(i).intensity);
+            }
+            
+            // find the one that is closest to the intensity of the target image
+//            Random rand = new Random();
+//            int almostTarget = rand.nextInt(((targetIntensity < 255 ? targetIntensity:255) - (targetIntensity > 0 ? targetIntensity:0) + 1) + (targetIntensity > 0 ? targetIntensity:0));
+            int blockIndex = nearestMatch(imageBlockIntensities, targetIntensity);
+            return imageBlocks.get(blockIndex);
+        } else {
+            return null;
+        }
+    }
+    
+    public static BufferedImage cropImage(BufferedImage source, Rectangle rect) {
+		BufferedImage result = source.getSubimage(rect.x, rect.y, rect.width, rect.height);
+		return result;
+	}
+
 }

@@ -24,10 +24,6 @@ public class TextureSynthesis {
 	private int targetHeight;
 	
 	private Block sourceBlock;
-	private BufferedImage[] sourceBlocks;
-	private BufferedImage[] targetBlocks;
-	private int[] blockIntensities;
-	private int[] targetBlockIntensities;
 
 	public TextureSynthesis(BufferedImage sourceTexture, BufferedImage targetImage, int targetWidth, int targetHeight) {
 		this.sourceTexture = sourceTexture;
@@ -37,9 +33,7 @@ public class TextureSynthesis {
 	}
 	
 	public BufferedImage synthesize() {
-		sourceBlock = new Block(this.sourceTexture, targetImage);
-//		sourceBlocks = this.divideToBlocks(sourceTexture, 10, 10, false);
-//		targetBlocks = this.divideToBlocks(targetImage, 10, 10, true);
+		sourceBlock = new Block(sourceTexture, targetImage);
 		
 		targetTexture = new BufferedImage(this.targetWidth, this.targetHeight, this.sourceTexture.getType());
 		
@@ -49,27 +43,17 @@ public class TextureSynthesis {
 		int numCols = (int) Math.ceil(this.targetHeight / blockHeight) + 1;
 		
 		Graphics2D gr = targetTexture.createGraphics();
-//		BlockImage seedBlockImage;
 		BlockImage blockImage;
 		for (int y = 0; y < blockWidth * numCols - blockWidth; y += blockWidth) {
 			for (int x = 0; x < blockHeight * numRows - blockHeight; x += blockHeight) {
 				int blockIndex = (y/blockHeight * numCols) + x/blockWidth;
-				if (blockIndex == 0) { // first block
-					blockImage = sourceBlock.getRandomImageBlock();
-				} else if (x > 0) { // following cols
-//					
-//					// sample last row of pixels from previous block
-//					// find closest match for these pixels with sampled block
-//				} else if (y > 0) { // following rows
-//					// 
-				} else if (blockIndex == numCols * numRows) { // last block
-					blockImage = sourceBlock.getRandomImageBlock();
-//					blockImage = sourceBlock.findMatchingBlock(sourceBlock.imageBlocks.get(blockIndex), Block.LEFT_EDGE);
+				if (y == 0) { // first row
+					if (x == 0) { blockImage = sourceBlock.getRandomImageBlock(); }
+					else { blockImage = sourceBlock.findMatchingBlock(sourceBlock.imageBlocks.get(blockIndex), Block.LEFT_EDGE); }
 				} else {
-					System.out.println(x + "," + y);
-					blockImage = sourceBlock.getRandomImageBlock();
-//					blockImage = sourceBlock.findMatchingBlock(sourceBlock.imageBlocks.get(blockIndex), Block.LEFT_EDGE);
+					blockImage = sourceBlock.getIntensityBlock(targetImage, x, y);
 				}
+				
 				gr.drawImage(blockImage, x, y, null);
 			}
 		}
