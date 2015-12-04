@@ -50,7 +50,9 @@ public class ImageFacer extends Frame {
 	
 	public ImageFacer() {
 		try {
+//			pizzaImage = ImageIO.read(new File("res/img/pasta.jpg"));
 			pizzaImage = ImageIO.read(new File("res/img/pepperoni-pizza.png"));
+//			speghettiImage = ImageIO.read(new File("res/img/strawberry.jpg"));
 			speghettiImage = ImageIO.read(new File("res/img/speghetti.jpg"));
 			personaMask = ImageIO.read(new File("res/img/persona-mask.jpg"));
 			faceMask = ImageIO.read(new File("res/img/face-mask.png"));
@@ -74,11 +76,15 @@ public class ImageFacer extends Frame {
         /* ----- Texture synthesis ----- */
         TextureSynthesis textureSynthPersona = new TextureSynthesis(pizzaImage, personaImage, personaImage.getWidth(), personaImage.getHeight());
         TextureSynthesis textureSynthPersona2 = new TextureSynthesis(speghettiImage, personaImage, personaImage.getWidth(), personaImage.getHeight());
+//        pizzaSynthImage = textureSynthPersona.synthesize(12);
+//        spaghettiSynthImage = textureSynthPersona2.synthesize(6);
         pizzaSynthImage = textureSynthPersona.synthesize(15);
         spaghettiSynthImage = textureSynthPersona2.synthesize(8);
         
         TextureSynthesis textureSynthFace = new TextureSynthesis(pizzaImage, faceImage, faceImage.getWidth(), faceImage.getHeight());
         TextureSynthesis textureSynthFace2 = new TextureSynthesis(speghettiImage, faceImage, faceImage.getWidth(), faceImage.getHeight());
+//        pizzaSynthImage2 = textureSynthFace.synthesize(12);
+//        spaghettiSynthImage2 = textureSynthFace2.synthesize(6);
         pizzaSynthImage2 = textureSynthFace.synthesize(15);
         spaghettiSynthImage2 = textureSynthFace2.synthesize(8);
         
